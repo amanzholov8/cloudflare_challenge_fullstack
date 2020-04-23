@@ -12,7 +12,14 @@ handleRequest = async (request) => {
   const randomIndex = Math.floor(Math.random() * variants.length);
   const variantPage = await getVariantPage(variants, randomIndex);
 
-  return variantPage;
+  const transformedPage = new HTMLRewriter()
+    .on('title', new TitleHandler())
+    .on('h1#title', new h1TitleHandler(randomIndex))
+    .on('p#description', new pDescriptionHandler(randomIndex))
+    .on('a#url', new aUrlHandler())
+    .transform(variantPage);
+
+  return transformedPage;
 }
 
 getVariantsFromAPI = async () => {
@@ -27,4 +34,45 @@ getVariantPage = async (variants, randomIndex) => {
   
   const response = await fetch(variant);
   return response;
+}
+
+class TitleHandler {
+  element(element) {
+    element.setInnerContent('Cloudflare Challenge');
+  }
+}
+
+class h1TitleHandler {
+  constructor(randomIndex) {
+    this.randomIndex = randomIndex;
+  }
+
+  element(element) {
+    element.setInnerContent(
+      this.randomIndex==0 ? 
+        'Changed Variant 1 Title'
+        : 'Changed Variant 2 Title'
+    );
+  }
+}
+
+class pDescriptionHandler {
+  constructor(randomIndex) {
+    this.randomIndex = randomIndex;
+  }
+
+  element(element) {
+    element.setInnerContent(
+      this.randomIndex==0 ? 
+        'This is a changed Variant 1 description' 
+        : 'This is a changed Variant 2 description'
+    );
+  }
+}
+
+class aUrlHandler {
+  element(element) {
+    element.setInnerContent("Go to A8V's GitHub page");
+    element.setAttribute('href', 'https://github.com/amanzholov8');
+  }
 }
