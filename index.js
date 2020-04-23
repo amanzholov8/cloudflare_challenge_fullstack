@@ -49,7 +49,7 @@ getVariantIndex = (variants, variantCookie) => {
     index = Math.floor(Math.random() * variants.length);
   }
   
-  return index
+  return index;
 }
 
 class TitleHandler {
