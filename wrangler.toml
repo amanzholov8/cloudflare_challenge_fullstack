@@ -1,0 +1,6 @@
+name = "my_wrangler_project"
+type = "javascript"
+account_id = "0d59ee7d73aa3f7788abc3f30d3b8d03"
+workers_dev = true
+route = ""
+zone_id = ""
