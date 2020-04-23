@@ -8,16 +8,20 @@ addEventListener('fetch', event => {
  */
 handleRequest = async (request) => {
   const variants = await getVariantsFromAPI();
+  const variantCookie = request.headers.get('Cookie');
+  const index = getVariantIndex(variants, variantCookie);
+  const variantPage = await getVariantPage(variants, index);
+  const variantPageResponse = new Response(variantPage.body);
 
-  const randomIndex = Math.floor(Math.random() * variants.length);
-  const variantPage = await getVariantPage(variants, randomIndex);
+  if (!variantCookie)
+    variantPageResponse.headers.set('Set-Cookie', `variant=${index}`);
 
   const transformedPage = new HTMLRewriter()
     .on('title', new TitleHandler())
-    .on('h1#title', new h1TitleHandler(randomIndex))
-    .on('p#description', new pDescriptionHandler(randomIndex))
+    .on('h1#title', new h1TitleHandler(index))
+    .on('p#description', new pDescriptionHandler(index))
     .on('a#url', new aUrlHandler())
-    .transform(variantPage);
+    .transform(variantPageResponse);
 
   return transformedPage;
 }
@@ -30,10 +34,22 @@ getVariantsFromAPI = async () => {
 }
 
 getVariantPage = async (variants, randomIndex) => {
-  const variant = variants[randomIndex];
-  
+  const variant = variants[randomIndex]; 
   const response = await fetch(variant);
+
   return response;
+}
+
+getVariantIndex = (variants, variantCookie) => {
+  let index = null;
+  
+  if (variantCookie) {
+    index = variantCookie=='variant=0' ? 0 : 1;
+  } else {
+    index = Math.floor(Math.random() * variants.length);
+  }
+  
+  return index
 }
 
 class TitleHandler {
